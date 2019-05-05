@@ -1,25 +1,13 @@
 const path = require('path');
 
 module.exports = {
+  env: {
+    browser: true
+  },
   globals: {
-    fetch: true,
-    sessionStorage: true,
-    localStorage: true,
-    Promise: true,
-    document: true,
-    require: true,
-    Intl: true,
-    Map: true,
     module: true,
     process: true,
-    console: true,
-    window: true,
-    FormData: true,
-    FileReader: true,
-    Image: true,
-    URL: true
   },
-
   parser: '@typescript-eslint/parser',
   extends: [
     // "plugin:import/errors", // See https://github.com/benmosher/eslint-plugin-import
