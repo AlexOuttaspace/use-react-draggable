@@ -5,7 +5,8 @@
   "dependencies": {
     "@types/react-dom": "^16.8.4",
     "react": "^16.8.6",
-    "react-dom": "^16.8.6"
+    "react-dom": "^16.8.6",
+    "react-draggable": "^3.3.0"
   },
   "scripts": {
     "start": "node ./scripts/start.js",
