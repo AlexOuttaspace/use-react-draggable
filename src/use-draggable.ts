@@ -1,11 +1,15 @@
 import { useState, useCallback, useRef } from 'react'
 
+type $TODO = any
+
 interface Position {
   x: number
   y: number
 }
 
-type $TODO = any
+interface DraggableEventData extends Position {
+  node: Element
+}
 
 function offsetXYFromParent(
   e: React.MouseEvent<HTMLElement>,
@@ -36,17 +40,29 @@ function getControlPosition(e: React.MouseEvent<HTMLElement>): Position {
 
 interface UseDraggableArgs {
   position: Position
-  onDragStart: $TODO
+  onDragStart?: $TODO
+  onDragStop?: $TODO
+  onDrag?: $TODO
 }
 
-const useDragStartEvents = ({ onDragStart, setIsDragging }: $TODO): $TODO => {
+const useDragStartEvents = ({
+  onDragStart,
+  setIsDragging,
+  handleDrag,
+  handleDragStop
+}: $TODO): $TODO => {
   const handleDragStart = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
-      getControlPosition(e)
-      onDragStart(e)
+      const { x, y } = getControlPosition(e)
+      const node = e.target as Element
+      const draggableData: DraggableEventData = { x, y, node }
       setIsDragging(true)
+      onDragStart(e, draggableData)
+
+      window.addEventListener('mousemove', handleDrag, false)
+      window.addEventListener('mouseup', handleDragStop, false)
     },
-    [onDragStart, setIsDragging]
+    [onDragStart, setIsDragging, handleDrag, handleDragStop]
   )
 
   const onMouseDown = useCallback(
@@ -59,12 +75,63 @@ const useDragStartEvents = ({ onDragStart, setIsDragging }: $TODO): $TODO => {
   return { onMouseDown }
 }
 
-export const useDraggable = ({ position, onDragStart }: UseDraggableArgs) => {
+const useDragEvents = ({ onDrag, onDragStop, onDragStart }: $TODO): $TODO => {
   const [isDragging, setIsDragging] = useState(false)
 
+  const handleDrag = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      onDrag(e)
+      console.log(e)
+    },
+    [onDrag]
+  )
+
+  const handleDragStop = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      onDragStop(e)
+
+      window.removeEventListener('mousemove', handleDrag as $TODO, false)
+      window.removeEventListener('mouseup', handleDragStop as $TODO, false)
+    },
+    [onDragStop]
+  )
+
+  const handleDragStart = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      const { x, y } = getControlPosition(e)
+      const node = e.target as Element
+      const draggableData: DraggableEventData = { x, y, node }
+      setIsDragging(true)
+      onDragStart(e, draggableData)
+
+      window.addEventListener('mousemove', handleDrag as $TODO, false)
+      window.addEventListener('mouseup', handleDragStop as $TODO, false)
+    },
+    [onDragStart, setIsDragging, handleDrag, handleDragStop]
+  )
+
+  const onMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      handleDragStart(e)
+    },
+    [handleDragStart]
+  )
+
+  return { onMouseDown }
+}
+
+export const useDraggable = ({
+  onDrag = () => {},
+  onDragStart = () => {},
+  onDragStop = () => {}
+}: UseDraggableArgs) => {
   const handleRef = useRef(null)
 
-  const { onMouseDown } = useDragStartEvents({ onDragStart, setIsDragging })
+  const { onMouseDown } = useDragEvents({
+    onDrag,
+    onDragStop,
+    onDragStart
+  })
 
   const getHandleProps = useCallback(
     (props = {}) => ({
